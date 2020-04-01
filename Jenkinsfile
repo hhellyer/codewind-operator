@@ -11,7 +11,7 @@ kind: Pod
 spec:
   containers:
   - name: go
-    image: golang:1.12-stretch
+    image: golang:1.13-stretch
     tty: true
     command:
     - cat
@@ -32,7 +32,7 @@ spec:
     }
 
     environment {
-        CODE_DIRECTORY_FOR_GO = 'src/github.com/eclipse/codewind-installer'
+        CODE_DIRECTORY_FOR_GO = 'src/github.com/eclipse/codewind-operator'
         DEFAULT_WORKSPACE_DIR_FILE = 'temp_default_dir'
         CODECOV_TOKEN = credentials('codecov-token')
     }
