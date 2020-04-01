@@ -76,7 +76,14 @@ spec:
                         RELEASE_VERSION=v0.16.0
                         curl -LO https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}/operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
                         # TODO - Verify downloaded release.
-                        chmod +x operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu && sudo mkdir -p /usr/local/bin/ && sudo cp operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu /usr/local/bin/operator-sdk && rm operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
+                        mkdir -p $DEFAULT_CODE_DIRECTORY/bin/
+                        chmod +x operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
+                        cp operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu $DEFAULT_CODE_DIRECTORY/bin/operator-sdk
+                        rm operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
+                        export PATH=$PATH:$DEFAULT_CODE_DIRECTORY/bin
+
+                        # Verify operator-sdk is on the path
+                        which operator-sdk
 
                         # go cache setup
                         mkdir .cache
