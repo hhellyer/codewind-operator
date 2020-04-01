@@ -53,6 +53,7 @@ spec:
                     sh '''#!/bin/bash
 
                         echo "starting preInstall.....: GOPATH=$GOPATH"
+                        set -x
 
                         # add the base directory to the gopath
                         DEFAULT_CODE_DIRECTORY=$PWD
