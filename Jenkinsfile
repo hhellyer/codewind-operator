@@ -4,14 +4,14 @@ pipeline {
 
     agent {
         kubernetes {
-              label 'go-pod-1-13'
+              label 'go-pod-1-13-buster'
             yaml """
 apiVersion: v1
 kind: Pod
 spec:
   containers:
   - name: go
-    image: golang:1.13-stretch
+    image: golang:1.13-buster
     tty: true
     command:
     - cat
@@ -54,6 +54,7 @@ spec:
 
                         echo "Starting setup for build.....: GOPATH=$GOPATH"
                         set -x
+                        whoami
 
                         # add the base directory to the gopath
                         DEFAULT_CODE_DIRECTORY=$PWD
@@ -85,6 +86,16 @@ spec:
                         # Verify operator-sdk is on the path
                         which operator-sdk
 
+                        # Debian 10
+                        echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+                        wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/Debian_10/Release.key -O Release.key
+
+                        apt-key add - < Release.key
+                        apt-get update -qq
+                        apt-get -qq -y install buildah
+
+                        which buildah
+
                         # go cache setup
                         mkdir .cache
                         cd .cache
@@ -98,7 +109,7 @@ spec:
                         export GO111MODULE=on
                         go mod tidy
                         # TODO - Use the branch name as the tag instead of latest.
-                        operator-sdk build eclipse/codewind-operator:latest
+                        operator-sdk build --image-builder buildah eclipse/codewind-operator:latest
 
                         # clean up the cache directory
                         cd ../../
