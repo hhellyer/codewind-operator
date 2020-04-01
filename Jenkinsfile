@@ -4,7 +4,7 @@ pipeline {
 
     agent {
         kubernetes {
-              label 'go-pod'
+              label 'go-pod-1-13'
             yaml """
 apiVersion: v1
 kind: Pod
