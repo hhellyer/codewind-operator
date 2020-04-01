@@ -52,7 +52,7 @@ spec:
                 container('go') {
                     sh '''#!/bin/bash
 
-                        echo "starting preInstall.....: GOPATH=$GOPATH"
+                        echo "Starting setup for build.....: GOPATH=$GOPATH"
                         set -x
 
                         # add the base directory to the gopath
@@ -88,6 +88,7 @@ spec:
                         export HOME=$JENKINS_HOME
                         export GOCACHE=/home/jenkins/agent/$CODE_DIRECTORY_FOR_GO/.cache/go-build
                         export GOARCH=amd64
+                        export GO111MODULE=on
                         go mod tidy
                         # TODO - Use the branch name as the tag instead of latest.
                         operator-sdk build eclipse/codewind-operator:latest
