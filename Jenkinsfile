@@ -40,9 +40,7 @@ spec:
     stages {
 
         stage ('Build') {
-            agent {
-                label "docker-build"
-            }
+
             // This when clause disables Tagged build
             when {
                 beforeAgent true
@@ -100,6 +98,9 @@ spec:
         }
 
         stage('Build Image') {
+            agent {
+                label "docker-build"
+            }
             // This when clause disables Tagged build
             when {
                 beforeAgent true
