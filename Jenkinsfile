@@ -115,7 +115,7 @@ spec:
                 script {
                     sh '''
                         set -x
-                        // Just check the operator binary is still there.
+                        # Just check the operator binary is still there.
                         ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
                     '''
                 }
@@ -166,32 +166,8 @@ spec:
                 script {
                     sh '''
                         set -x
-                        // Just check the operator binary is still there.
+                        # Just check the operator binary is still there.
                         ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
-                    //     # switch to the code go directory
-                    //     cd ../../$CODE_DIRECTORY_FOR_GO
-                    //     echo $(pwd)
-                    //     if [ -d codewind-installer ]; then
-                    //         rm -rf codewind-installer
-                    //     fi
-                    //     mkdir codewind-installer
-
-                    //     TIMESTAMP="$(date +%F-%H%M)"
-                    //     # WINDOWS EXE: Submit Windows unsigned.exe and save signed output to signed.exe
-
-                    //     # only sign windows exe if not a pull request
-                    //     if [ -z $CHANGE_ID ]; then
-                    //         curl -o codewind-installer/cwctl-win-${TIMESTAMP}.exe  -F file=@cwctl-win.exe http://build.eclipse.org:31338/winsign.php
-                    //         rm cwctl-win.exe
-                    //     fi
-                    //     # move other executable to codewind-installer directory and add timestamp to the name
-                    //     for fileid in cwctl-*; do
-                    //         mv -v $fileid codewind-installer/${fileid}-$TIMESTAMP
-                    //     done
-
-                    //     DEFAULT_WORKSPACE_DIR=$(cat $DEFAULT_WORKSPACE_DIR_FILE)
-                    //     mkdir $DEFAULT_WORKSPACE_DIR/codewind-installer
-                    //     cp -r codewind-installer/* $DEFAULT_WORKSPACE_DIR/codewind-installer
                     '''
                     // // stash the executables so they are avaialable outside of this agent
                     // dir('codewind-installer') {
