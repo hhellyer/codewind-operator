@@ -112,7 +112,7 @@ spec:
 
             steps {
                 echo 'Building Operator Docker Image'
-                withDockerRegistry([url: 'https://index.docker.io/v1/', credentialsId: 'docker.com-bot']) {
+                // withDockerRegistry([url: 'https://index.docker.io/v1/', credentialsId: 'docker.com-bot']) {
                     script {
                         sh '''
                             set -x
@@ -125,7 +125,7 @@ spec:
                             docker push eclipse/codewind-operator:latest
                         '''
                     }
-                }
+                // }
                 // container('go') {
                 //    sh '''#!/bin/bash
                 //         export GOPATH=/go:/home/jenkins/agent
