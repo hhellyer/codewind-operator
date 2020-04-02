@@ -93,7 +93,7 @@ spec:
                         cd ../../
                         rm -rf .cache
                     '''
-                    stash name: "operator-binary", includes: "/home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator"
+                    stash name: "operator-binary", includes: "**/codewind-operator"
                 }
             }
         }
