@@ -72,30 +72,6 @@ spec:
                         cp -r $DEFAULT_CODE_DIRECTORY/* .
                         echo $DEFAULT_CODE_DIRECTORY >> $DEFAULT_WORKSPACE_DIR_FILE
 
-                        # Download and install the operator-sdk.
-                        # Set the release version variable
-                        RELEASE_VERSION=v0.16.0
-                        curl -LO https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}/operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
-                        # TODO - Verify downloaded release.
-                        mkdir -p $DEFAULT_CODE_DIRECTORY/bin/
-                        chmod +x operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
-                        cp operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu $DEFAULT_CODE_DIRECTORY/bin/operator-sdk
-                        rm operator-sdk-${RELEASE_VERSION}-x86_64-linux-gnu
-                        export PATH=$PATH:$DEFAULT_CODE_DIRECTORY/bin
-
-                        # Verify operator-sdk is on the path
-                        which operator-sdk
-
-                        # Debian 10
-                        echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-                        wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/Debian_10/Release.key -O Release.key
-
-                        apt-key add - < Release.key
-                        apt-get update -qq
-                        apt-get -qq -y install buildah
-
-                        which buildah
-
                         # go cache setup
                         mkdir .cache
                         cd .cache
@@ -108,8 +84,9 @@ spec:
                         export GOARCH=amd64
                         export GO111MODULE=on
                         go mod tidy
-                        # TODO - Use the branch name as the tag instead of latest.
-                        operator-sdk build --image-builder buildah eclipse/codewind-operator:latest
+
+                        # This is copied from the operator SDK build command.
+                        go build -o /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator -gcflags all=-trimpath=/home/jenkins/agent/src/github.com/eclipse -asmflags all=-trimpath=/home/jenkins/agent/src/github.com/eclipse github.com/eclipse/codewind-operator/cmd/manager
 
                         # clean up the cache directory
                         cd ../../
@@ -135,37 +112,39 @@ spec:
 
             steps {
                 echo 'Starting tests'
+                set -x
+                // Just check the operator binary is still there.
+                ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
 
-                container('go') {
-                   sh '''#!/bin/bash
-                        export GOPATH=/go:/home/jenkins/agent
+                // container('go') {
+                //    sh '''#!/bin/bash
+                //         export GOPATH=/go:/home/jenkins/agent
 
-                        # go cache setup
-                        mkdir .cache
-                        cd .cache
-                        mkdir go-build
-                        cd ../
-                        export GOCACHE=/home/jenkins/agent/$CODE_DIRECTORY_FOR_GO/.cache/go-build
+                //         # go cache setup
+                //         mkdir .cache
+                //         cd .cache
+                //         mkdir go-build
+                //         cd ../
+                //         export GOCACHE=/home/jenkins/agent/$CODE_DIRECTORY_FOR_GO/.cache/go-build
+                //         cd ../../$CODE_DIRECTORY_FOR_GO
+                //         go test ./... -short -coverprofile=coverage.txt -covermode=count
+                //         TEST_RESULT=$?
+                //         if [ $TEST_RESULT -ne 0 ]; then
+                //             exit $TEST_RESULT
+                //         fi
 
-                        cd ../../$CODE_DIRECTORY_FOR_GO
-                        go test ./... -short -coverprofile=coverage.txt -covermode=count
-                        TEST_RESULT=$?
-                        if [ $TEST_RESULT -ne 0 ]; then
-                            exit $TEST_RESULT
-                        fi
+                //         # Report coverage
+                //         if [ -n "$CODECOV_TOKEN" ]; then
+                //             echo "Reporting coverage to codecov"
+                //             bash <(curl -s https://codecov.io/bash) -f ./coverage.txt
+                //         else
+                //             echo "CODECOV_TOKEN not set, not reporting coverage"
+                //         fi
 
-                        # Report coverage
-                        if [ -n "$CODECOV_TOKEN" ]; then
-                            echo "Reporting coverage to codecov"
-                            bash <(curl -s https://codecov.io/bash) -f ./coverage.txt
-                        else
-                            echo "CODECOV_TOKEN not set, not reporting coverage"
-                        fi
-
-                        # clean up the cache directory
-                        rm -rf .cache
-                    '''
-                }
+                //         # clean up the cache directory
+                //         rm -rf .cache
+                //     '''
+                // }
                 echo 'End of test stage'
             }
         }
@@ -180,38 +159,42 @@ spec:
             }
 
             steps {
+                echo 'Starting Upload'
+                set -x
+                // Just check the operator binary is still there.
+                ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
                 script {
-                    sh '''
-                        # switch to the code go directory
-                        cd ../../$CODE_DIRECTORY_FOR_GO
-                        echo $(pwd)
-                        if [ -d codewind-installer ]; then
-                            rm -rf codewind-installer
-                        fi
-                        mkdir codewind-installer
+                    // sh '''
+                    //     # switch to the code go directory
+                    //     cd ../../$CODE_DIRECTORY_FOR_GO
+                    //     echo $(pwd)
+                    //     if [ -d codewind-installer ]; then
+                    //         rm -rf codewind-installer
+                    //     fi
+                    //     mkdir codewind-installer
 
-                        TIMESTAMP="$(date +%F-%H%M)"
-                        # WINDOWS EXE: Submit Windows unsigned.exe and save signed output to signed.exe
+                    //     TIMESTAMP="$(date +%F-%H%M)"
+                    //     # WINDOWS EXE: Submit Windows unsigned.exe and save signed output to signed.exe
 
-                        # only sign windows exe if not a pull request
-                        if [ -z $CHANGE_ID ]; then
-                            curl -o codewind-installer/cwctl-win-${TIMESTAMP}.exe  -F file=@cwctl-win.exe http://build.eclipse.org:31338/winsign.php
-                            rm cwctl-win.exe
-                        fi
-                        # move other executable to codewind-installer directory and add timestamp to the name
-                        for fileid in cwctl-*; do
-                            mv -v $fileid codewind-installer/${fileid}-$TIMESTAMP
-                        done
+                    //     # only sign windows exe if not a pull request
+                    //     if [ -z $CHANGE_ID ]; then
+                    //         curl -o codewind-installer/cwctl-win-${TIMESTAMP}.exe  -F file=@cwctl-win.exe http://build.eclipse.org:31338/winsign.php
+                    //         rm cwctl-win.exe
+                    //     fi
+                    //     # move other executable to codewind-installer directory and add timestamp to the name
+                    //     for fileid in cwctl-*; do
+                    //         mv -v $fileid codewind-installer/${fileid}-$TIMESTAMP
+                    //     done
 
-                        DEFAULT_WORKSPACE_DIR=$(cat $DEFAULT_WORKSPACE_DIR_FILE)
-                        mkdir $DEFAULT_WORKSPACE_DIR/codewind-installer
-                        cp -r codewind-installer/* $DEFAULT_WORKSPACE_DIR/codewind-installer
-                    '''
-                    // stash the executables so they are avaialable outside of this agent
-                    dir('codewind-installer') {
-                        sh 'echo "Stashing: $(ls -lA cwctl*)"'
-                        stash includes: 'cwctl*', name: 'EXECUTABLES'
-                    }
+                    //     DEFAULT_WORKSPACE_DIR=$(cat $DEFAULT_WORKSPACE_DIR_FILE)
+                    //     mkdir $DEFAULT_WORKSPACE_DIR/codewind-installer
+                    //     cp -r codewind-installer/* $DEFAULT_WORKSPACE_DIR/codewind-installer
+                    // '''
+                    // // stash the executables so they are avaialable outside of this agent
+                    // dir('codewind-installer') {
+                    //     sh 'echo "Stashing: $(ls -lA cwctl*)"'
+                    //     stash includes: 'cwctl*', name: 'EXECUTABLES'
+                    // }
                 }
             }
         }
@@ -244,72 +227,7 @@ spec:
                 unstash 'EXECUTABLES'
 
                 sh '''
-                    export REPO_NAME="codewind-installer"
-                    export DOWNLOAD_AREA_URL="https://download.eclipse.org/codewind/$REPO_NAME"
-                    export LATEST_DIR="latest"
-                    export BUILD_INFO="build_info.properties"
-                    export sshHost="genie.codewind@projects-storage.eclipse.org"
-                    export deployDir="/home/data/httpd/download.eclipse.org/codewind/$REPO_NAME"
-                    export CWCTL_BASENAME="cwctl"
-                    export CWCTL_LINUX="${CWCTL_BASENAME}-linux"
-                    export CWCTL_PPC64LE="${CWCTL_BASENAME}-ppc64le"
-                    export CWCTL_MACOS="${CWCTL_BASENAME}-macos"
-                    export CWCTL_WIN="${CWCTL_BASENAME}-win"
 
-                    UPLOAD_DIR="$GIT_BRANCH/$BUILD_ID"
-                    BUILD_URL="$DOWNLOAD_AREA_URL/$UPLOAD_DIR"
-
-                    ssh $sshHost rm -rf $deployDir/${UPLOAD_DIR}
-                    ssh $sshHost mkdir -p $deployDir/${UPLOAD_DIR}
-
-                    ssh $sshHost rm -rf $deployDir/$GIT_BRANCH/$LATEST_DIR
-                    ssh $sshHost mkdir -p $deployDir/$GIT_BRANCH/$LATEST_DIR
-
-                    ls -lA
-
-                    # Copy artifacts before renaming to the build ID'd directory
-                    scp ${CWCTL_BASENAME}* $sshHost:$deployDir/${UPLOAD_DIR}
-
-                    # Now prepare to copy to latest/ directory
-
-                    # Rename to remove timestamps
-                    mv $CWCTL_LINUX-*    $CWCTL_LINUX
-                    mv $CWCTL_PPC64LE-*  $CWCTL_PPC64LE
-                    mv $CWCTL_MACOS-*    $CWCTL_MACOS
-                    mv $CWCTL_WIN-*      $CWCTL_WIN.exe
-
-                    # Make a targz copy of each build and copy it into zips/
-                    export ZIPS_DIR="zips"
-                    if [ -d ${ZIPS_DIR} ]; then
-                        rm -rf ${ZIPS_DIR}
-                    fi
-
-                    mkdir ${ZIPS_DIR}
-                    for f in $(ls ${CWCTL_BASENAME}*); do
-                        export TARGZ_NAME="${f}.tar.gz"
-                        tar -czvf $TARGZ_NAME $f
-                        mv $TARGZ_NAME ${ZIPS_DIR}
-                    done
-
-                    # Assemble build_info.properties with build date and shasums
-
-                    echo "# Build date: $(date +%F-%T)" >> $BUILD_INFO
-                    echo "build_info.url=$BUILD_URL" >> $BUILD_INFO
-
-                    SHA1_LINUX=$(sha1sum $CWCTL_LINUX | cut -d ' ' -f 1)
-                    echo "build_info.linux.SHA-1=${SHA1_LINUX}" >> $BUILD_INFO
-
-                    SHA1_PPC64LE=$(sha1sum $CWCTL_PPC64LE | cut -d ' ' -f 1)
-                    echo "build_info.ppc64le.SHA-1=${SHA1_PPC64LE}" >> $BUILD_INFO
-
-                    SHA1_MACOS=$(sha1sum $CWCTL_MACOS | cut -d ' ' -f 1)
-                    echo "build_info.macos.SHA-1=${SHA1_MACOS}" >> $BUILD_INFO
-
-                    SHA1_WIN=$(sha1sum $CWCTL_WIN.exe | cut -d ' ' -f 1)
-                    echo "build_info.win.SHA-1=${SHA1_WIN}" >> $BUILD_INFO
-
-                    # Copy the build.properties, the zips, and the renamed artifacts to the latest/ build directory
-                    scp -r ${BUILD_INFO} ${CWCTL_BASENAME}* zips/ $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR
                   '''
                }
            }
