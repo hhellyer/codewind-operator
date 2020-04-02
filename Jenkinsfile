@@ -118,8 +118,8 @@ spec:
                             set -x
                             # Just check the operator binary is still there.
                             ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
-                            ls -lrt $CODE_DIRECTORY_FOR_GO/build/_output/bin/codewind-operator
-                            cd $CODE_DIRECTORY_FOR_GO
+                            ls -lrt /home/jenkins/agent/$CODE_DIRECTORY_FOR_GO/build/_output/bin/codewind-operator
+                            cd /home/jenkins/agent/$CODE_DIRECTORY_FOR_GO
                             docker build -f build/Dockerfile -t eclipse/codewind-operator:latest .
                             # TODO Make this conditional so we don't push PR builds.
                             docker push eclipse/codewind-operator:latest
