@@ -86,7 +86,7 @@ spec:
                         go mod tidy
 
                         # This is copied from the operator SDK build command.
-                        go build -o /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator -gcflags all=-trimpath=/home/jenkins/agent/src/github.com/eclipse -asmflags all=-trimpath=/home/jenkins/agent/src/github.com/eclipse github.com/eclipse/codewind-operator/cmd/manager
+                        go build -o /home/jenkins/agent/$CODE_DIRECTORY_FOR_GO/build/_output/bin/codewind-operator -gcflags all=-trimpath=/home/jenkins/agent/src/github.com/eclipse -asmflags all=-trimpath=/home/jenkins/agent/src/github.com/eclipse github.com/eclipse/codewind-operator/cmd/manager
 
                         # clean up the cache directory
                         cd ../../
@@ -96,7 +96,7 @@ spec:
             }
         }
 
-        stage('Test') {
+        stage('Build Image') {
             // This when clause disables Tagged build
             when {
                 beforeAgent true
@@ -111,13 +111,20 @@ spec:
             }
 
             steps {
-                echo 'Starting tests'
-                script {
-                    sh '''
-                        set -x
-                        # Just check the operator binary is still there.
-                        ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
-                    '''
+                echo 'Building Operator Docker Image'
+                withDockerRegistry([url: 'https://index.docker.io/v1/', credentialsId: 'docker.com-bot']) {
+                    script {
+                        sh '''
+                            set -x
+                            # Just check the operator binary is still there.
+                            ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
+                            ls -lrt $CODE_DIRECTORY_FOR_GO/build/_output/bin/codewind-operator
+                            cd $CODE_DIRECTORY_FOR_GO
+                            docker build -f build/Dockerfile -t eclipse/codewind-operator:latest .
+                            # TODO Make this conditional so we don't push PR builds.
+                            docker push eclipse/codewind-operator:latest
+                        '''
+                    }
                 }
                 // container('go') {
                 //    sh '''#!/bin/bash
