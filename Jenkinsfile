@@ -112,10 +112,13 @@ spec:
 
             steps {
                 echo 'Starting tests'
-                set -x
-                // Just check the operator binary is still there.
-                ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
-
+                script {
+                    sh '''
+                        set -x
+                        // Just check the operator binary is still there.
+                        ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
+                    '''
+                }
                 // container('go') {
                 //    sh '''#!/bin/bash
                 //         export GOPATH=/go:/home/jenkins/agent
@@ -160,11 +163,11 @@ spec:
 
             steps {
                 echo 'Starting Upload'
-                set -x
-                // Just check the operator binary is still there.
-                ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
                 script {
-                    // sh '''
+                    sh '''
+                        set -x
+                        // Just check the operator binary is still there.
+                        ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
                     //     # switch to the code go directory
                     //     cd ../../$CODE_DIRECTORY_FOR_GO
                     //     echo $(pwd)
@@ -189,12 +192,12 @@ spec:
                     //     DEFAULT_WORKSPACE_DIR=$(cat $DEFAULT_WORKSPACE_DIR_FILE)
                     //     mkdir $DEFAULT_WORKSPACE_DIR/codewind-installer
                     //     cp -r codewind-installer/* $DEFAULT_WORKSPACE_DIR/codewind-installer
-                    // '''
+                    '''
                     // // stash the executables so they are avaialable outside of this agent
                     // dir('codewind-installer') {
                     //     sh 'echo "Stashing: $(ls -lA cwctl*)"'
                     //     stash includes: 'cwctl*', name: 'EXECUTABLES'
-                    // }
+                    }
                 }
             }
         }
