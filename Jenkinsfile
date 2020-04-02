@@ -93,7 +93,7 @@ spec:
                         cd ../../
                         rm -rf .cache
                     '''
-                    stash name: "operator-binary", includes: "**/codewind-operator"
+                    // stash name: "operator-binary", includes: "**/codewind-operator"
                 }
             }
         }
@@ -118,11 +118,12 @@ spec:
             steps {
                 echo 'Building Operator Docker Image'
                 // withDockerRegistry([url: 'https://index.docker.io/v1/', credentialsId: 'docker.com-bot']) {
-                    unstash "operator-binary"
+                    // unstash "operator-binary"
                     script {
                         sh '''
                             set -x
                             # Just check the operator binary is still there.
+                            find /home/jenkins/agent/
                             ls -lrt /home/jenkins/agent/src/github.com/eclipse/codewind-operator/build/_output/bin/codewind-operator
                             ls -lrt /home/jenkins/agent/$CODE_DIRECTORY_FOR_GO/build/_output/bin/codewind-operator
                             cd /home/jenkins/agent/$CODE_DIRECTORY_FOR_GO
