@@ -93,6 +93,7 @@ spec:
                         cd ../../
                         rm -rf .cache
                     '''
+                    stash name: "operator-binary", includes: "build/_output/bin/codewind-operator"
                 }
             }
         }
@@ -117,6 +118,7 @@ spec:
             steps {
                 echo 'Building Operator Docker Image'
                 // withDockerRegistry([url: 'https://index.docker.io/v1/', credentialsId: 'docker.com-bot']) {
+                    unstash "operator-binary"
                     script {
                         sh '''
                             set -x
