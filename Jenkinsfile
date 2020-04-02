@@ -197,7 +197,7 @@ spec:
                     // dir('codewind-installer') {
                     //     sh 'echo "Stashing: $(ls -lA cwctl*)"'
                     //     stash includes: 'cwctl*', name: 'EXECUTABLES'
-                    }
+                    // }
                 }
             }
         }
