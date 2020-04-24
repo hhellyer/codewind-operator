@@ -305,10 +305,16 @@ func (r *ReconcileCodewind) Reconcile(request reconcile.Request) (reconcile.Resu
 			reqLogger.Error(err, "Failed to create new PFE PVC.", "Namespace", newCodewindPVC.Namespace, "Name", newCodewindPVC.Name)
 			return reconcile.Result{}, err
 		}
+		codewind.Status.PodStatus.PVCStatus.PFEPVCName = newCodewindPVC.ObjectMeta.Name
+		codewind.Status.PodStatus.PVCStatus.PFEPVName = newCodewindPVC.Spec.VolumeName
+		codewind.Status.PodStatus.PVCStatus.PFEPVCStatus = newCodewindPVC.Status.Phase
 	} else if err != nil {
 		reqLogger.Error(err, "Failed to get PFE PVC.")
 		return reconcile.Result{}, err
 	}
+	codewind.Status.PodStatus.PVCStatus.PFEPVCName = codewindPVC.ObjectMeta.Name
+	codewind.Status.PodStatus.PVCStatus.PFEPVName = codewindPVC.Spec.VolumeName
+	codewind.Status.PodStatus.PVCStatus.PFEPVCStatus = codewindPVC.Status.Phase
 
 	keycloakPod, err := r.getKeycloakPod(reqLogger, request, codewind.Spec.KeycloakDeployment)
 	if err != nil || keycloakPod == nil {
@@ -390,11 +396,15 @@ func (r *ReconcileCodewind) Reconcile(request reconcile.Request) (reconcile.Resu
 			reqLogger.Error(err, "Failed to create new Performance deployment.", "Namespace", codewind.Namespace, "Name", newDeployment.Name)
 			return reconcile.Result{}, err
 		}
+		codewind.Status.PodStatus.PerformancePodName = newDeployment.ObjectMeta.Name
+		// codewind.Status.PodStatus.PerformancePodStatus = newDeployment.ObjectMeta.Name
 		return reconcile.Result{Requeue: true}, nil
 	} else if err != nil {
 		reqLogger.Error(err, "Failed to get Codewind Performance deployment")
 		return reconcile.Result{}, err
 	}
+	codewind.Status.PodStatus.PerformancePodName = deploymentPerformance.ObjectMeta.Name
+	// codewind.Status.PodStatus.PerformancePodName = deploymentPerformance.
 
 	// Check if the Codewind Performance Service already exists, if not create a new one
 	servicePerformance := &corev1.Service{}
@@ -407,6 +417,7 @@ func (r *ReconcileCodewind) Reconcile(request reconcile.Request) (reconcile.Resu
 			reqLogger.Error(err, "Failed to create new Service.", "Namespace", newService.Namespace, "Name", newService.Name)
 			return reconcile.Result{}, err
 		}
+		// Success, update the accessURL
 	} else if err != nil {
 		reqLogger.Error(err, "Failed to get Codewind Performance service")
 		return reconcile.Result{}, err

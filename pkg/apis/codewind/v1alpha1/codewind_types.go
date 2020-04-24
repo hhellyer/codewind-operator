@@ -12,6 +12,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -35,6 +36,20 @@ type CodewindSpec struct {
 	LogLevel string `json:"logLevel"`
 }
 
+type codewindPodStatus struct {
+	PFEPodName           string            `json:"pfePodName"`
+	PFEPodStatus         string            `json:"pfePodStatus"`
+	PVCStatus            codewindPVCStatus `json:"pvcStatus"`
+	PerformancePodName   string            `json:"performancePodName"`
+	PerformancePodStatus string            `json:"performancePodStatus"`
+}
+
+type codewindPVCStatus struct {
+	PFEPVCName   string                            `json:"pfePVCName"`
+	PFEPVName    string                            `json:"pfePVName"`
+	PFEPVCStatus corev1.PersistentVolumeClaimPhase `json:"pfePVCStatus"`
+}
+
 // CodewindStatus defines the observed state of Codewind
 type CodewindStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
@@ -46,6 +61,8 @@ type CodewindStatus struct {
 
 	// Keycloak Configuration status
 	KeycloakStatus string `json:"keycloakStatus"`
+
+	PodStatus codewindPodStatus `json:"podStatus"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
